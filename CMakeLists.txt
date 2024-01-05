@@ -69,8 +69,8 @@ else(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   endif(NOT CMAKE_C_FLAGS MATCHES "-Wstrict-prototypes")
 
   # Disable C++ exceptions.
-  string(REGEX REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+  #string(REGEX REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 
   # Disable RTTI.
   string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -447,25 +447,11 @@ if(LEVELDB_BUILD_BENCHMARKS)
     target_link_libraries(db_bench_sqlite3 sqlite3)
   endif(HAVE_SQLITE3)
 
-  # check_library_exists is insufficient here because the library names have
-  # different manglings when compiled with clang or gcc, at least when installed
-  # with Homebrew on Mac.
-  set(OLD_CMAKE_REQURED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})
-  list(APPEND CMAKE_REQUIRED_LIBRARIES kyotocabinet)
-  check_cxx_source_compiles("
-#include <kcpolydb.h>
 
-int main() {
-  kyotocabinet::TreeDB* db = new kyotocabinet::TreeDB();
-  delete db;
-  return 0;
-}
-  "  HAVE_KYOTOCABINET)
-  set(CMAKE_REQUIRED_LIBRARIES ${OLD_CMAKE_REQURED_LIBRARIES})
-  if(HAVE_KYOTOCABINET)
     leveldb_benchmark("benchmarks/db_bench_tree_db.cc")
     target_link_libraries(db_bench_tree_db kyotocabinet)
-  endif(HAVE_KYOTOCABINET)
+    leveldb_benchmark("benchmarks/db_bench_tree_db_single_threaded.cc")
+    target_link_libraries(db_bench_tree_db_single_threaded kyotocabinet)
 endif(LEVELDB_BUILD_BENCHMARKS)
 
 if(LEVELDB_INSTALL)
